@@ -455,15 +455,15 @@ function editorRedo() {
 // ==================== PROCESSING PAGE ANIMATION ====================
 
 const processingSteps = [
-  { delay: 0, duration: 1500, status: { en: 'Uploading your video...', ar: 'رفع فيديوك...' } },
-  { delay: 1500, duration: 2000, status: { en: 'Analyzing video content...', ar: 'تحليل محتوى الفيديو...' } },
-  { delay: 3500, duration: 2000, status: { en: 'Generating AI captions...', ar: 'توليد كابشن بالذكاء الاصطناعي...' } },
-  { delay: 5500, duration: 2000, status: { en: 'Applying effects & transitions...', ar: 'تطبيق التأثيرات والانتقالات...' } },
-  { delay: 7500, duration: 1000, status: { en: 'Finalizing your project...', ar: 'إنهاء مشروعك...' } },
+  { delay: 0,    duration: 700,  status: { en: 'Uploading your video...', ar: 'رفع فيديوك...' } },
+  { delay: 700,  duration: 900,  status: { en: 'Analyzing video content...', ar: 'تحليل محتوى الفيديو...' } },
+  { delay: 1600, duration: 900,  status: { en: 'Generating AI captions...', ar: 'توليد كابشن بالذكاء الاصطناعي...' } },
+  { delay: 2500, duration: 900,  status: { en: 'Applying effects & transitions...', ar: 'تطبيق التأثيرات والانتقالات...' } },
+  { delay: 3400, duration: 600,  status: { en: 'Finalizing your project...', ar: 'إنهاء مشروعك...' } },
 ];
 
 function runProcessingSequence() {
-  const totalDuration = 8500;
+  const totalDuration = 4000;
   const statusEl = document.getElementById('processing-status');
   const progressFill = document.getElementById('progress-fill');
   const progressBar = document.getElementById('progress-bar-wrapper');
@@ -524,7 +524,7 @@ function runProcessingSequence() {
 
     setTimeout(() => {
       window.location.href = 'editor.html';
-    }, 1200);
+    }, 600);
   }, totalDuration);
 }
 

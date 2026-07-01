@@ -211,9 +211,23 @@
       <div class="canvas-wrapper ratio-916" id="canvas-wrapper">
         <!-- No video placeholder -->
         <div class="no-video-placeholder" id="no-video-msg">
-          <div style="font-size:3rem;margin-bottom:12px;">🎬</div>
-          <p style="color:rgba(255,255,255,0.5);font-size:0.9rem;" data-en="No video loaded. Go back and upload a video." data-ar="لم يتم تحميل فيديو. ارجع وارفع فيديو.">No video loaded. Go back and upload a video.</p>
-          <a href="index.html" class="btn btn-secondary btn-sm" style="margin-top:12px;" data-en="Upload Video" data-ar="رفع فيديو">Upload Video</a>
+          <div style="font-size:3rem;margin-bottom:16px;">🎬</div>
+          <p style="color:rgba(255,255,255,0.7);font-size:1rem;font-weight:700;margin-bottom:8px;"
+             data-en="No video uploaded yet" data-ar="لم يتم رفع فيديو بعد">
+            No video uploaded yet
+          </p>
+          <p style="color:rgba(255,255,255,0.4);font-size:0.82rem;margin-bottom:20px;"
+             data-en="Upload a video to start editing" data-ar="ارفع فيديو لبدء التحرير">
+            Upload a video to start editing
+          </p>
+          <label for="editor-file-input" class="btn btn-primary" style="cursor:pointer;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            <span data-en="Upload Video" data-ar="رفع فيديو">Upload Video</span>
+          </label>
+          <input type="file" id="editor-file-input" accept="video/*" hidden onchange="loadVideoInEditor(event)" />
+          <p style="color:rgba(255,255,255,0.3);font-size:0.72rem;margin-top:12px;">
+            MP4, MOV, WebM, AVI
+          </p>
         </div>
 
         <!-- Video Player -->

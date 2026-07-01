@@ -31,35 +31,9 @@ function initEditor() {
   // Load video from session
   const videoUrl = sessionStorage.getItem('vidai-video-url');
   if (videoUrl && videoPlayer) {
-    videoPlayer.src = videoUrl;
-    videoPlayer.load();
-    videoPlayer.style.display = 'block';
-
-    const placeholder = document.getElementById('no-video-msg');
-    if (placeholder) placeholder.style.display = 'none';
-
-    const controls = document.getElementById('video-controls');
-    if (controls) controls.style.display = 'flex';
-
-    videoPlayer.addEventListener('loadedmetadata', onVideoLoaded);
-    videoPlayer.addEventListener('timeupdate', onTimeUpdate);
-    videoPlayer.addEventListener('ended', onVideoEnded);
-    videoPlayer.addEventListener('play', () => {
-      EditorState.isPlaying = true;
-      updatePlayPauseBtn();
-      if (audioElement) audioElement.play();
-      startRenderLoop();
-    });
-    videoPlayer.addEventListener('pause', () => {
-      EditorState.isPlaying = false;
-      updatePlayPauseBtn();
-      if (audioElement) audioElement.pause();
-    });
-
-    EditorState.videoLoaded = true;
-    showToast(AppState.lang === 'ar' ? '🎬 تم تحميل الفيديو' : '🎬 Video loaded', 'success');
+    loadVideoFromUrl(videoUrl);
   } else {
-    // Demo mode without video
+    // Demo mode without video - show placeholder
     const placeholder = document.getElementById('no-video-msg');
     if (placeholder) placeholder.style.display = 'flex';
   }
@@ -76,8 +50,86 @@ function initEditor() {
   resizeCanvas();
   window.addEventListener('resize', resizeCanvas);
 
+  // Drag & drop on canvas area
+  const canvasArea = document.getElementById('canvas-area');
+  if (canvasArea) {
+    canvasArea.addEventListener('dragover', (e) => { e.preventDefault(); canvasArea.style.outline = '2px dashed rgba(124,58,237,0.5)'; });
+    canvasArea.addEventListener('dragleave', () => { canvasArea.style.outline = ''; });
+    canvasArea.addEventListener('drop', (e) => {
+      e.preventDefault();
+      canvasArea.style.outline = '';
+      const file = e.dataTransfer?.files?.[0];
+      if (file && file.type.startsWith('video/')) {
+        loadVideoFile(file);
+      }
+    });
+  }
+
   // Start render loop for captions even without video
   requestAnimationFrame(renderFrame);
+}
+
+// Load video from a URL (blob or other)
+function loadVideoFromUrl(videoUrl) {
+  if (!videoPlayer) return;
+  videoPlayer.src = videoUrl;
+  videoPlayer.load();
+
+  // Handle load error (URL might be stale)
+  videoPlayer.onerror = () => {
+    const placeholder = document.getElementById('no-video-msg');
+    if (placeholder) placeholder.style.display = 'flex';
+    if (videoPlayer) videoPlayer.style.display = 'none';
+    const controls = document.getElementById('video-controls');
+    if (controls) controls.style.display = 'none';
+    showToast(AppState.lang === 'ar' ? '⚠️ تعذر تحميل الفيديو، يرجى رفعه مرة أخرى' : '⚠️ Could not load video, please re-upload', 'warning');
+  };
+
+  videoPlayer.onloadeddata = () => {
+    videoPlayer.style.display = 'block';
+    const placeholder = document.getElementById('no-video-msg');
+    if (placeholder) placeholder.style.display = 'none';
+    const controls = document.getElementById('video-controls');
+    if (controls) controls.style.display = 'flex';
+    EditorState.videoLoaded = true;
+  };
+
+  videoPlayer.addEventListener('loadedmetadata', onVideoLoaded, { once: true });
+  videoPlayer.addEventListener('timeupdate', onTimeUpdate);
+  videoPlayer.addEventListener('ended', onVideoEnded);
+  videoPlayer.addEventListener('play', () => {
+    EditorState.isPlaying = true;
+    updatePlayPauseBtn();
+    if (typeof audioElement !== 'undefined' && audioElement) audioElement.play();
+    startRenderLoop();
+  });
+  videoPlayer.addEventListener('pause', () => {
+    EditorState.isPlaying = false;
+    updatePlayPauseBtn();
+    if (typeof audioElement !== 'undefined' && audioElement) audioElement.pause();
+  });
+
+  showToast(AppState.lang === 'ar' ? '🎬 جارٍ تحميل الفيديو...' : '🎬 Loading video...', 'info');
+}
+
+// Load video from a File object (direct upload in editor)
+function loadVideoFile(file) {
+  const url = URL.createObjectURL(file);
+  sessionStorage.setItem('vidai-video-url', url);
+  sessionStorage.setItem('vidai-file-name', file.name);
+  loadVideoFromUrl(url);
+  showToast(AppState.lang === 'ar' ? '✅ تم رفع الفيديو: ' + file.name : '✅ Video uploaded: ' + file.name, 'success');
+}
+
+// Called from editor-file-input input element
+function loadVideoInEditor(event) {
+  const file = event.target.files?.[0];
+  if (!file) return;
+  if (!file.type.startsWith('video/')) {
+    showToast(AppState.lang === 'ar' ? '❌ يرجى اختيار ملف فيديو' : '❌ Please select a video file', 'error');
+    return;
+  }
+  loadVideoFile(file);
 }
 
 function onVideoLoaded() {
@@ -221,49 +273,57 @@ function renderCaption(caption, currentTime) {
   let offsetX = 0, offsetY = 0, opacity = 1, scale = 1;
 
   switch (caption.effect) {
-    case 'fadeUp':
+    case 'fadeUp': {
       opacity = Math.min(elapsed * 4, 1);
       offsetY = (1 - opacity) * 30;
       if (progress > 0.85) opacity = Math.max(0, 1 - (progress - 0.85) / 0.15);
       break;
-    case 'fadeIn':
+    }
+    case 'fadeIn': {
       opacity = Math.min(elapsed * 4, 1);
       if (progress > 0.85) opacity = Math.max(0, 1 - (progress - 0.85) / 0.15);
       break;
-    case 'slideLeft':
+    }
+    case 'slideLeft': {
       const slideProgress = Math.min(elapsed * 5, 1);
       offsetX = (1 - easeOutBack(slideProgress)) * -80;
       opacity = slideProgress;
       break;
-    case 'slideRight':
+    }
+    case 'slideRight': {
       const slideRightProg = Math.min(elapsed * 5, 1);
       offsetX = (1 - easeOutBack(slideRightProg)) * 80;
       opacity = slideRightProg;
       break;
-    case 'bounce':
+    }
+    case 'bounce': {
       opacity = Math.min(elapsed * 6, 1);
-      const bounceT = Math.min(elapsed * 3, 1);
       offsetY = Math.sin(elapsed * 8) * Math.max(0, 1 - elapsed * 2) * 15;
       break;
-    case 'zoom':
+    }
+    case 'zoom': {
       scale = 0.5 + Math.min(elapsed * 4, 0.5);
       opacity = Math.min(elapsed * 4, 1);
       break;
-    case 'glitch':
+    }
+    case 'glitch': {
       opacity = 1;
       if (elapsed < 0.3) {
         offsetX = (Math.random() - 0.5) * 8;
         offsetY = (Math.random() - 0.5) * 4;
       }
       break;
-    case 'typewriter':
+    }
+    case 'typewriter': {
       opacity = 1;
       const charCount = Math.floor(elapsed * 15);
       caption._visibleText = caption.text.substring(0, charCount);
       break;
-    default:
+    }
+    default: {
       opacity = Math.min(elapsed * 4, 1);
       if (progress > 0.85) opacity = Math.max(0, 1 - (progress - 0.85) / 0.15);
+    }
   }
 
   if (opacity <= 0) return;
