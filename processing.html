@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VidAI — Processing Your Video...</title>
+  <meta name="description" content="AI is analyzing your video and adding captions, effects and transitions automatically." />
+  <link rel="stylesheet" href="css/main.css" />
+  <link rel="stylesheet" href="css/processing.css" />
+</head>
+<body>
+
+<div class="processing-page" aria-live="polite" aria-atomic="true">
+  <div class="processing-card">
+
+    <!-- Video thumbnail preview -->
+    <div class="processing-preview" id="processing-preview" style="display:none;">
+      <video id="processing-video-thumb" muted playsinline></video>
+    </div>
+
+    <!-- AI Brain Animation -->
+    <div class="ai-brain-wrapper" aria-hidden="true">
+      <div class="ai-ring ai-ring-1"></div>
+      <div class="ai-ring ai-ring-2"></div>
+      <div class="ai-ring ai-ring-3"></div>
+      <div class="ai-brain-core">🤖</div>
+    </div>
+
+    <!-- Title -->
+    <h1 class="processing-title" id="processing-title" data-en="AI is working its magic..." data-ar="الذكاء الاصطناعي يعمل...">AI is working its magic...</h1>
+    <p class="processing-subtitle" data-en="Analyzing your video and generating professional edits. This takes just a few seconds." data-ar="نحلل فيديوك وننشئ تعديلات احترافية. هذا يستغرق ثوانٍ فقط.">
+      Analyzing your video and generating professional edits. This takes just a few seconds.
+    </p>
+
+    <!-- Dynamic Status -->
+    <div class="processing-status" id="processing-status" role="status"></div>
+
+    <!-- Progress Bar -->
+    <div class="processing-progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" aria-label="Processing progress" id="progress-bar-wrapper">
+      <div class="processing-progress-fill" id="progress-fill"></div>
+    </div>
+
+    <!-- Processing Steps -->
+    <div class="processing-steps" aria-label="Processing steps">
+      <div class="processing-step" id="step-0" role="listitem">
+        <div class="step-icon-wrap">🎬</div>
+        <div class="step-info">
+          <div class="step-name" data-en="Uploading video" data-ar="رفع الفيديو">Uploading video</div>
+          <div class="step-desc" data-en="Preparing your file for analysis" data-ar="تجهيز ملفك للتحليل">Preparing your file for analysis</div>
+        </div>
+        <div class="step-status-icon pending" id="step-status-0" aria-label="Pending">⏳</div>
+      </div>
+
+      <div class="processing-step" id="step-1" role="listitem">
+        <div class="step-icon-wrap">🔍</div>
+        <div class="step-info">
+          <div class="step-name" data-en="Analyzing content" data-ar="تحليل المحتوى">Analyzing content</div>
+          <div class="step-desc" data-en="Detecting scenes, faces, and speech" data-ar="اكتشاف المشاهد والوجوه والكلام">Detecting scenes, faces, and speech</div>
+        </div>
+        <div class="step-status-icon pending" id="step-status-1" aria-label="Pending">⏳</div>
+      </div>
+
+      <div class="processing-step" id="step-2" role="listitem">
+        <div class="step-icon-wrap">📝</div>
+        <div class="step-info">
+          <div class="step-name" data-en="Generating captions" data-ar="توليد الكابشن">Generating captions</div>
+          <div class="step-desc" data-en="Transcribing and styling your speech" data-ar="تحويل الكلام إلى نص وتنسيقه">Transcribing and styling your speech</div>
+        </div>
+        <div class="step-status-icon pending" id="step-status-2" aria-label="Pending">⏳</div>
+      </div>
+
+      <div class="processing-step" id="step-3" role="listitem">
+        <div class="step-icon-wrap">✨</div>
+        <div class="step-info">
+          <div class="step-name" data-en="Applying effects" data-ar="تطبيق التأثيرات">Applying effects</div>
+          <div class="step-desc" data-en="Adding transitions and visual effects" data-ar="إضافة الانتقالات والتأثيرات البصرية">Adding transitions and visual effects</div>
+        </div>
+        <div class="step-status-icon pending" id="step-status-3" aria-label="Pending">⏳</div>
+      </div>
+
+      <div class="processing-step" id="step-4" role="listitem">
+        <div class="step-icon-wrap">🎉</div>
+        <div class="step-info">
+          <div class="step-name" data-en="Finalizing project" data-ar="إنهاء المشروع">Finalizing project</div>
+          <div class="step-desc" data-en="Your video is ready to be edited" data-ar="فيديوك جاهز للتحرير">Your video is ready to be edited</div>
+        </div>
+        <div class="step-status-icon pending" id="step-status-4" aria-label="Pending">⏳</div>
+      </div>
+    </div>
+
+    <!-- Tip -->
+    <div class="processing-tip" id="processing-tip" aria-live="polite">
+      <span data-en="💡 Tip: Use the Bloom template for a warm, cinematic look." data-ar="💡 نصيحة: استخدم قالب Bloom للمظهر الدافئ السينمائي.">💡 Tip: Use the Bloom template for a warm, cinematic look.</span>
+    </div>
+  </div>
+</div>
+
+<script src="js/templates.js"></script>
+<script src="js/app.js"></script>
+<script>
+  // Initialize processing page
+  document.addEventListener('DOMContentLoaded', () => {
+    // Apply saved language
+    const savedLang = localStorage.getItem('vidai-lang') || 'en';
+    setLang(savedLang);
+
+    // Load video thumbnail
+    const videoData = sessionStorage.getItem('vidai-video-url');
+    if (videoData) {
+      const preview = document.getElementById('processing-preview');
+      const thumb = document.getElementById('processing-video-thumb');
+      thumb.src = videoData;
+      preview.style.display = 'block';
+    }
+
+    // Start processing simulation
+    runProcessingSequence();
+  });
+</script>
+</body>
+</html>

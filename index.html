@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VidAI — AI that edits like a professional editor would</title>
+  <meta name="description" content="Upload your video, let AI add captions, transitions, and effects automatically. Export like a pro in seconds." />
+  <meta property="og:title" content="VidAI — AI Video Editor" />
+  <meta property="og:description" content="AI-powered video editing with automatic captions, transitions and effects." />
+  <link rel="stylesheet" href="css/main.css" />
+  <link rel="stylesheet" href="css/landing.css" />
+</head>
+<body>
+
+<!-- ==================== NAVBAR ==================== -->
+<nav class="navbar" id="navbar" role="navigation" aria-label="Main navigation">
+  <div class="navbar-logo">
+    <div class="logo-icon">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <polygon points="5 3 19 12 5 21 5 3"/>
+      </svg>
+    </div>
+    <span>VidAI</span>
+  </div>
+
+  <nav class="navbar-nav" aria-label="Site navigation">
+    <a href="#features" class="nav-link" data-en="Features" data-ar="المميزات">Features</a>
+    <a href="#templates" class="nav-link" data-en="Templates" data-ar="القوالب">Templates</a>
+    <a href="#pricing" class="nav-link" data-en="Pricing" data-ar="الأسعار">Pricing</a>
+    <a href="#" class="nav-link" data-en="Resources" data-ar="الموارد">Resources</a>
+  </nav>
+
+  <div class="navbar-actions">
+    <!-- Language Toggle -->
+    <div class="lang-toggle" role="group" aria-label="Language selection">
+      <button class="lang-btn active" id="lang-en" onclick="setLang('en')" aria-pressed="true">EN</button>
+      <button class="lang-btn" id="lang-ar" onclick="setLang('ar')" aria-pressed="false">عر</button>
+    </div>
+    <a href="#" class="btn btn-ghost btn-sm" data-en="Sign in" data-ar="تسجيل الدخول">Sign in</a>
+    <a href="#upload" class="btn btn-primary btn-sm" data-en="Get started free" data-ar="ابدأ مجاناً">Get started free</a>
+  </div>
+</nav>
+
+<!-- ==================== HERO SECTION ==================== -->
+<section class="hero-section" id="home" aria-labelledby="hero-title">
+
+  <div class="hero-badge animate-fade-up">
+    <span class="badge badge-new">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
+      <span data-en="AI-Powered Video Editing" data-ar="تحرير فيديو بالذكاء الاصطناعي">AI-Powered Video Editing</span>
+    </span>
+  </div>
+
+  <h1 class="hero-title" id="hero-title">
+    <span data-en="AI that edits like a" data-ar="ذكاء اصطناعي يحرر مثل">AI that edits like a</span>
+    <br/>
+    <span class="text-gradient" data-en="professional editor would." data-ar="محرر محترف حقيقي.">professional editor would.</span>
+  </h1>
+
+  <p class="hero-subtitle">
+    <span data-en="Upload your video — our AI automatically adds captions, transitions, and stunning effects. Export in seconds." data-ar="ارفع فيديوك — يضيف الذكاء الاصطناعي تلقائياً الكابشن والانتقالات والتأثيرات المذهلة. صدّر في ثوانٍ.">
+      Upload your video — our AI automatically adds captions, transitions, and stunning effects. Export in seconds.
+    </span>
+  </p>
+
+  <!-- Upload Widget -->
+  <div class="upload-widget" id="upload">
+    <div class="upload-drop-area" id="drop-area" role="button" tabindex="0" aria-label="Upload video" onclick="document.getElementById('file-input').click()" ondrop="handleDrop(event)" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" onkeydown="if(event.key==='Enter')document.getElementById('file-input').click()">
+      <input type="file" id="file-input" accept="video/*" hidden onchange="handleFileSelect(event)" aria-label="Video file input" />
+
+      <div class="upload-icon-stack">
+        <div class="icon-back">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>
+          </svg>
+        </div>
+        <div class="icon-front">➕</div>
+      </div>
+
+      <p class="upload-title" data-en="Import or drag your video" data-ar="استورد أو اسحب فيديوك">Import or drag your video</p>
+      <p class="upload-hint" data-en="MP4, MOV, AVI, WebM · Up to 500MB" data-ar="MP4، MOV، AVI، WebM · حتى 500 ميجابايت">MP4, MOV, AVI, WebM · Up to 500MB</p>
+    </div>
+
+    <!-- File Preview (hidden by default) -->
+    <div class="file-preview-strip" id="file-preview" style="display:none;">
+      <div class="file-thumb">
+        <video id="preview-thumb" muted></video>
+      </div>
+      <div class="file-info">
+        <div class="file-name" id="file-name-display"></div>
+        <div class="file-meta" id="file-meta-display"></div>
+      </div>
+      <button class="file-remove" onclick="removeFile()" aria-label="Remove file">✕</button>
+    </div>
+
+    <div class="upload-bar">
+      <div class="upload-bar-left">
+        <button class="btn btn-ghost btn-sm" style="width:36px;height:36px;padding:0;border-radius:50%;" aria-label="Attachment">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/>
+          </svg>
+        </button>
+
+        <div class="template-chip" id="template-chip" onclick="showTemplateMenu()">
+          <div class="chip-dot"></div>
+          <span id="template-chip-name" data-en="Bloom" data-ar="بلوم">Bloom</span>
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M6 9l6 6 6-6"/></svg>
+        </div>
+      </div>
+
+      <button class="create-btn" id="create-btn" onclick="startProcessing()" disabled aria-label="Create video">
+        <span data-en="Create my video" data-ar="أنشئ فيديوي">Create my video</span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Template Menu Dropdown -->
+  <div class="card-glass" id="template-menu" style="display:none;position:absolute;top:calc(50% + 80px);z-index:100;padding:12px;max-width:300px;width:90%;">
+    <p class="panel-section-title" style="padding:0 4px 8px;color:var(--clr-text-muted);" data-en="Choose a style" data-ar="اختر نمطاً">Choose a style</p>
+    <div style="display:flex;flex-direction:column;gap:6px;" id="template-menu-list"></div>
+  </div>
+
+</section>
+
+<!-- ==================== TEMPLATES GALLERY ==================== -->
+<section class="templates-section" id="templates" aria-labelledby="templates-heading">
+  <div class="container">
+    <p class="section-label" data-en="TEMPLATES" data-ar="القوالب">TEMPLATES</p>
+    <h2 class="heading-xl" id="templates-heading">
+      <span data-en="Choose your style" data-ar="اختر نمطك">Choose your style</span>
+    </h2>
+    <p class="text-muted text-lg" style="margin-top:8px;" data-en="Professional templates crafted for every content type" data-ar="قوالب احترافية لكل نوع من المحتوى">
+      Professional templates crafted for every content type
+    </p>
+  </div>
+
+  <div class="templates-grid" id="templates-grid" role="list">
+    <!-- Templates injected by JS -->
+  </div>
+</section>
+
+<!-- ==================== FEATURES SECTION ==================== -->
+<section class="features-section" id="features" aria-labelledby="features-heading">
+  <div class="container">
+    <p class="section-label" data-en="FEATURES" data-ar="المميزات">FEATURES</p>
+    <h2 class="heading-xl" id="features-heading" data-en="Everything you need to go viral" data-ar="كل ما تحتاجه للانتشار">Everything you need to go viral</h2>
+    <p class="text-muted text-lg" style="margin-top:8px;" data-en="Powered by cutting-edge AI for perfect results every time" data-ar="مدعوم بذكاء اصطناعي متطور لنتائج مثالية في كل مرة">Powered by cutting-edge AI for perfect results every time</p>
+
+    <div class="features-grid">
+      <article class="feature-card animate-fade-up">
+        <div class="feature-icon">🤖</div>
+        <h3 data-en="AI Captions" data-ar="كابشن تلقائي">AI Captions</h3>
+        <p data-en="Automatically transcribe and style your speech into animated captions. Supports Arabic and English." data-ar="تحويل كلامك تلقائياً إلى كابشن متحركة وأنيقة. يدعم العربية والإنجليزية.">Automatically transcribe and style your speech into animated captions. Supports Arabic and English.</p>
+      </article>
+
+      <article class="feature-card animate-fade-up delay-100">
+        <div class="feature-icon">✨</div>
+        <h3 data-en="Smart Transitions" data-ar="انتقالات ذكية">Smart Transitions</h3>
+        <p data-en="AI detects scene changes and adds seamless transitions automatically for a professional flow." data-ar="يكشف الذكاء الاصطناعي تغيرات المشاهد ويضيف انتقالات سلسة تلقائياً.">AI detects scene changes and adds seamless transitions automatically for a professional flow.</p>
+      </article>
+
+      <article class="feature-card animate-fade-up delay-200">
+        <div class="feature-icon">🎨</div>
+        <h3 data-en="Visual Effects" data-ar="مؤثرات بصرية">Visual Effects</h3>
+        <p data-en="Choose from Fade, Slide, Bounce, Glitch, and Zoom effects to make your content stand out." data-ar="اختر من تأثيرات Fade وSlide وBounce وGlitch وZoom لتميز محتواك.">Choose from Fade, Slide, Bounce, Glitch, and Zoom effects to make your content stand out.</p>
+      </article>
+
+      <article class="feature-card animate-fade-up delay-300">
+        <div class="feature-icon">📐</div>
+        <h3 data-en="Multiple Ratios" data-ar="نسب متعددة">Multiple Ratios</h3>
+        <p data-en="Export in 9:16 for TikTok & Reels, 16:9 for YouTube, or 1:1 for Instagram posts." data-ar="صدّر بنسبة 9:16 لتيك توك وريلز، أو 16:9 ليوتيوب، أو 1:1 لمنشورات إنستغرام.">Export in 9:16 for TikTok & Reels, 16:9 for YouTube, or 1:1 for Instagram posts.</p>
+      </article>
+
+      <article class="feature-card animate-fade-up delay-400">
+        <div class="feature-icon">⚡</div>
+        <h3 data-en="Instant Processing" data-ar="معالجة فورية">Instant Processing</h3>
+        <p data-en="Our optimized pipeline processes your video in seconds, not minutes. No waiting around." data-ar="خط معالجتنا المحسّن يعالج فيديوك في ثوانٍ، لا دقائق.">Our optimized pipeline processes your video in seconds, not minutes. No waiting around.</p>
+      </article>
+
+      <article class="feature-card animate-fade-up delay-500">
+        <div class="feature-icon">🌐</div>
+        <h3 data-en="Arabic & English" data-ar="عربي وإنجليزي">Arabic & English</h3>
+        <p data-en="Full RTL support for Arabic content. Create bilingual videos for a wider audience." data-ar="دعم كامل للكتابة من اليمين لليسار. أنشئ فيديوهات ثنائية اللغة لجمهور أوسع.">Full RTL support for Arabic content. Create bilingual videos for a wider audience.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== STATS SECTION ==================== -->
+<section class="stats-section" aria-labelledby="stats-heading">
+  <div class="container">
+    <h2 class="sr-only" id="stats-heading">Platform Statistics</h2>
+    <div class="stats-grid">
+      <div class="stat-item">
+        <div class="stat-number" id="stat-1">0M+</div>
+        <div class="stat-label" data-en="Videos created" data-ar="فيديو تم إنشاؤه">Videos created</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-number" id="stat-2">0K+</div>
+        <div class="stat-label" data-en="Active creators" data-ar="منشئ محتوى نشط">Active creators</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-number" id="stat-3">0+</div>
+        <div class="stat-label" data-en="Templates available" data-ar="قالب متاح">Templates available</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-number" id="stat-4">0%</div>
+        <div class="stat-label" data-en="Satisfaction rate" data-ar="معدل الرضا">Satisfaction rate</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== PRICING SECTION ==================== -->
+<section class="pricing-section" id="pricing" aria-labelledby="pricing-heading">
+  <div class="container">
+    <p class="section-label" data-en="PRICING" data-ar="الأسعار">PRICING</p>
+    <h2 class="heading-xl" id="pricing-heading" style="text-align:center;" data-en="Simple, transparent pricing" data-ar="أسعار بسيطة وشفافة">Simple, transparent pricing</h2>
+    <p class="text-muted text-lg" style="text-align:center;margin-top:8px;" data-en="Start free, upgrade when you need more" data-ar="ابدأ مجاناً، وترقّ عندما تحتاج المزيد">Start free, upgrade when you need more</p>
+
+    <div class="pricing-grid">
+      <!-- Free Plan -->
+      <div class="pricing-card">
+        <div class="plan-name" data-en="Starter" data-ar="مبتدئ">Starter</div>
+        <p class="plan-desc" data-en="Perfect for trying out VidAI" data-ar="مثالي لتجربة VidAI">Perfect for trying out VidAI</p>
+        <div class="price">
+          <span class="price-amount">$0</span>
+          <span class="price-period" data-en="/month" data-ar="/شهر">/month</span>
+        </div>
+        <ul class="feature-list">
+          <li class="feature-item"><span class="check">✓</span><span data-en="5 videos / month" data-ar="5 فيديوهات / شهر">5 videos / month</span></li>
+          <li class="feature-item"><span class="check">✓</span><span data-en="720p export" data-ar="تصدير 720p">720p export</span></li>
+          <li class="feature-item"><span class="check">✓</span><span data-en="Basic templates" data-ar="قوالب أساسية">Basic templates</span></li>
+          <li class="feature-item"><span class="check">✓</span><span data-en="Auto captions" data-ar="كابشن تلقائي">Auto captions</span></li>
+        </ul>
+        <button class="btn btn-ghost w-full" data-en="Get started free" data-ar="ابدأ مجاناً" onclick="document.getElementById('upload').scrollIntoView({behavior:'smooth'})">Get started free</button>
+      </div>
+
+      <!-- Pro Plan (featured) -->
+      <div class="pricing-card featured">
+        <div class="featured-badge" data-en="Most Popular" data-ar="الأكثر شعبية">Most Popular</div>
+        <div class="plan-name" data-en="Pro" data-ar="محترف">Pro</div>
+        <p class="plan-desc" style="color:rgba(255,255,255,0.5);" data-en="For serious content creators" data-ar="للمنشئين الجادين">For serious content creators</p>
+        <div class="price">
+          <span class="price-amount">$19</span>
+          <span class="price-period" style="color:rgba(255,255,255,0.5);" data-en="/month" data-ar="/شهر">/month</span>
+        </div>
+        <ul class="feature-list">
+          <li class="feature-item"><span class="check">✓</span><span data-en="Unlimited videos" data-ar="فيديوهات غير محدودة">Unlimited videos</span></li>
+          <li class="feature-item"><span class="check">✓</span><span data-en="4K export" data-ar="تصدير 4K">4K export</span></li>
+          <li class="feature-item"><span class="check">✓</span><span data-en="All templates" data-ar="جميع القوالب">All templates</span></li>
+          <li class="feature-item"><span class="check">✓</span><span data-en="Auto captions + translation" data-ar="كابشن تلقائي + ترجمة">Auto captions + translation</span></li>
+          <li class="feature-item"><span class="check">✓</span><span data-en="AI smart transitions" data-ar="انتقالات ذكية بالذكاء الاصطناعي">AI smart transitions</span></li>
+          <li class="feature-item"><span class="check">✓</span><span data-en="Priority processing" data-ar="معالجة ذات أولوية">Priority processing</span></li>
+        </ul>
+        <button class="btn btn-primary w-full" data-en="Get Pro" data-ar="احصل على Pro" onclick="document.getElementById('upload').scrollIntoView({behavior:'smooth'})">Get Pro</button>
+      </div>
+
+      <!-- Business Plan -->
+      <div class="pricing-card">
+        <div class="plan-name" data-en="Business" data-ar="أعمال">Business</div>
+        <p class="plan-desc" data-en="For agencies and teams" data-ar="للوكالات والفرق">For agencies and teams</p>
+        <div class="price">
+          <span class="price-amount">$49</span>
+          <span class="price-period" data-en="/month" data-ar="/شهر">/month</span>
+        </div>
+        <ul class="feature-list">
+          <li class="feature-item"><span class="check">✓</span><span data-en="Everything in Pro" data-ar="كل شيء في Pro">Everything in Pro</span></li>
+          <li class="feature-item"><span class="check">✓</span><span data-en="Team collaboration" data-ar="تعاون الفريق">Team collaboration</span></li>
+          <li class="feature-item"><span class="check">✓</span><span data-en="Custom branding" data-ar="علامة تجارية مخصصة">Custom branding</span></li>
+          <li class="feature-item"><span class="check">✓</span><span data-en="API access" data-ar="وصول API">API access</span></li>
+          <li class="feature-item"><span class="check">✓</span><span data-en="24/7 support" data-ar="دعم 24/7">24/7 support</span></li>
+        </ul>
+        <button class="btn btn-secondary w-full" data-en="Contact sales" data-ar="تواصل مع المبيعات">Contact sales</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== CTA SECTION ==================== -->
+<section class="cta-section" aria-labelledby="cta-heading">
+  <div class="container">
+    <div class="cta-box">
+      <p class="section-label" data-en="GET STARTED" data-ar="ابدأ الآن">GET STARTED</p>
+      <h2 class="display-lg" id="cta-heading" style="margin-bottom:16px;">
+        <span data-en="Ready to go viral?" data-ar="جاهز للانتشار؟">Ready to go viral?</span>
+      </h2>
+      <p class="text-muted text-lg" style="margin-bottom:32px;" data-en="Join thousands of creators already using VidAI to grow their audience." data-ar="انضم لآلاف المنشئين الذين يستخدمون VidAI بالفعل لتنمية جمهورهم.">
+        Join thousands of creators already using VidAI to grow their audience.
+      </p>
+      <div class="flex justify-center gap-3" style="flex-wrap:wrap;">
+        <button class="btn btn-primary btn-xl" onclick="document.getElementById('upload').scrollIntoView({behavior:'smooth'})" data-en="Start editing for free" data-ar="ابدأ التحرير مجاناً">Start editing for free</button>
+        <a href="#features" class="btn btn-ghost btn-xl" data-en="Learn more" data-ar="اعرف المزيد">Learn more</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== FOOTER ==================== -->
+<footer class="site-footer" aria-label="Site footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <div class="navbar-logo" style="margin-bottom:16px;">
+          <div class="logo-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          </div>
+          <span style="color:white;">VidAI</span>
+        </div>
+        <p data-en="AI-powered video editing for content creators. Add captions, transitions, and effects automatically." data-ar="تحرير فيديو بالذكاء الاصطناعي لمنشئي المحتوى. أضف الكابشن والانتقالات والتأثيرات تلقائياً.">AI-powered video editing for content creators. Add captions, transitions, and effects automatically.</p>
+      </div>
+      <div class="footer-col">
+        <h4 data-en="Product" data-ar="المنتج">Product</h4>
+        <a href="#features" data-en="Features" data-ar="المميزات">Features</a>
+        <a href="#templates" data-en="Templates" data-ar="القوالب">Templates</a>
+        <a href="#pricing" data-en="Pricing" data-ar="الأسعار">Pricing</a>
+        <a href="#" data-en="API" data-ar="API">API</a>
+      </div>
+      <div class="footer-col">
+        <h4 data-en="Resources" data-ar="الموارد">Resources</h4>
+        <a href="#" data-en="Documentation" data-ar="التوثيق">Documentation</a>
+        <a href="#" data-en="Blog" data-ar="المدونة">Blog</a>
+        <a href="#" data-en="Tutorials" data-ar="الدروس">Tutorials</a>
+        <a href="#" data-en="Community" data-ar="المجتمع">Community</a>
+      </div>
+      <div class="footer-col">
+        <h4 data-en="Company" data-ar="الشركة">Company</h4>
+        <a href="#" data-en="About" data-ar="حول">About</a>
+        <a href="#" data-en="Contact" data-ar="اتصل بنا">Contact</a>
+        <a href="#" data-en="Privacy" data-ar="الخصوصية">Privacy</a>
+        <a href="#" data-en="Terms" data-ar="الشروط">Terms</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2026 VidAI. <span data-en="All rights reserved." data-ar="جميع الحقوق محفوظة.">All rights reserved.</span></p>
+      <div class="flex gap-4" style="align-items:center;">
+        <a href="#" style="color:rgba(255,255,255,0.4);font-size:0.8rem;" data-en="Privacy Policy" data-ar="سياسة الخصوصية">Privacy Policy</a>
+        <a href="#" style="color:rgba(255,255,255,0.4);font-size:0.8rem;" data-en="Terms of Service" data-ar="شروط الخدمة">Terms of Service</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<!-- ==================== SCRIPTS ==================== -->
+<script src="js/templates.js"></script>
+<script src="js/app.js"></script>
+<script src="js/upload.js"></script>
+
+</body>
+</html>

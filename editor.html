@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VidAI Editor — Video Editor</title>
+  <meta name="description" content="Edit your video with AI-powered captions, effects, and transitions." />
+  <link rel="stylesheet" href="css/main.css" />
+  <link rel="stylesheet" href="css/editor.css" />
+</head>
+<body>
+
+<div class="editor-page" id="editor-page">
+
+  <!-- ==================== TOPBAR ==================== -->
+  <header class="editor-topbar" role="banner">
+    <div class="topbar-left">
+      <a href="index.html" class="topbar-back" aria-label="Go back to home">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+        <span data-en="Back" data-ar="رجوع">Back</span>
+      </a>
+      <input type="text" class="project-name-input" id="project-name" value="My Video Project" aria-label="Project name" />
+    </div>
+
+    <div class="topbar-center">
+      <!-- Undo/Redo -->
+      <button class="topbar-tool-btn" onclick="editorUndo()" title="Undo" aria-label="Undo" id="btn-undo">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/></svg>
+      </button>
+      <button class="topbar-tool-btn" onclick="editorRedo()" title="Redo" aria-label="Redo" id="btn-redo">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 7v6h-6"/><path d="M3 17a9 9 0 0 1 9-9 9 9 0 0 1 6 2.3L21 13"/></svg>
+      </button>
+
+      <div class="topbar-divider" aria-hidden="true"></div>
+
+      <!-- Aspect Ratio Selector -->
+      <div class="aspect-selector" role="group" aria-label="Aspect ratio">
+        <button class="aspect-btn active" id="ratio-916" onclick="setRatio('9:16')" aria-pressed="true" data-en="9:16" data-ar="9:16">9:16</button>
+        <button class="aspect-btn" id="ratio-169" onclick="setRatio('16:9')" aria-pressed="false" data-en="16:9" data-ar="16:9">16:9</button>
+        <button class="aspect-btn" id="ratio-11" onclick="setRatio('1:1')" aria-pressed="false" data-en="1:1" data-ar="1:1">1:1</button>
+      </div>
+
+      <div class="topbar-divider" aria-hidden="true"></div>
+
+      <!-- Language Toggle in Editor -->
+      <div class="lang-toggle" role="group" aria-label="Language">
+        <button class="lang-btn active" id="editor-lang-en" onclick="setLang('en')">EN</button>
+        <button class="lang-btn" id="editor-lang-ar" onclick="setLang('ar')">عر</button>
+      </div>
+    </div>
+
+    <div class="topbar-right">
+      <button class="topbar-tool-btn" title="Preview" aria-label="Preview" onclick="togglePreviewMode()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+      </button>
+
+      <button class="export-btn" onclick="openExportModal()" aria-label="Export video" id="export-btn">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        <span data-en="Export" data-ar="تصدير">Export</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ==================== EDITOR BODY ==================== -->
+  <div class="editor-body">
+
+    <!-- Left Icon Sidebar -->
+    <aside class="editor-sidebar-left" aria-label="Editor tools">
+      <button class="sidebar-icon-btn active" id="sidebar-templates" onclick="toggleLeftPanel('templates')" data-tooltip="Templates" aria-label="Templates panel" aria-pressed="true">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+        <span class="icon-label" data-en="Style" data-ar="نمط">Style</span>
+      </button>
+
+      <button class="sidebar-icon-btn" id="sidebar-text" onclick="toggleLeftPanel('text')" data-tooltip="Add Text" aria-label="Text panel" aria-pressed="false">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7V4h16v3"/><path d="M9 20h6"/><path d="M12 4v16"/></svg>
+        <span class="icon-label" data-en="Text" data-ar="نص">Text</span>
+      </button>
+
+      <button class="sidebar-icon-btn" id="sidebar-effects" onclick="toggleLeftPanel('effects')" data-tooltip="Effects" aria-label="Effects panel" aria-pressed="false">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+        <span class="icon-label" data-en="FX" data-ar="FX">FX</span>
+      </button>
+
+      <button class="sidebar-icon-btn" id="sidebar-music" onclick="toggleLeftPanel('music')" data-tooltip="Music" aria-label="Music panel" aria-pressed="false">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+        <span class="icon-label" data-en="Music" data-ar="موسيقى">Music</span>
+      </button>
+    </aside>
+
+    <!-- Left Content Panel -->
+    <aside class="editor-panel" id="left-panel" aria-label="Templates and styles">
+      <div class="panel-header">
+        <span class="panel-title" id="left-panel-title" data-en="Templates" data-ar="القوالب">Templates</span>
+        <button class="panel-close" onclick="closeLeftPanel()" aria-label="Close panel">✕</button>
+      </div>
+      <div class="panel-body dark-scroll" id="left-panel-body">
+
+        <!-- Templates Section -->
+        <div id="panel-templates-content">
+          <div class="panel-section">
+            <div class="panel-section-title" data-en="CAPTION STYLE" data-ar="نمط الكابشن">CAPTION STYLE</div>
+            <div class="template-list" id="editor-template-list">
+              <!-- Injected by JS -->
+            </div>
+          </div>
+
+          <div class="panel-section">
+            <div class="panel-section-title" data-en="TRANSITIONS" data-ar="الانتقالات">TRANSITIONS</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+              <button class="effect-chip active" onclick="setTransition('fade')" id="trans-fade">✦ Fade</button>
+              <button class="effect-chip" onclick="setTransition('slide')" id="trans-slide">→ Slide</button>
+              <button class="effect-chip" onclick="setTransition('zoom')" id="trans-zoom">⊙ Zoom</button>
+              <button class="effect-chip" onclick="setTransition('dissolve')" id="trans-dissolve">◈ Dissolve</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Text Section -->
+        <div id="panel-text-content" style="display:none;">
+          <div class="panel-section">
+            <div class="panel-section-title" data-en="ADD CAPTION" data-ar="أضف كابشن">ADD CAPTION</div>
+            <div class="caption-form">
+              <label class="form-label" for="new-caption-text" data-en="Caption text" data-ar="نص الكابشن">Caption text</label>
+              <textarea class="form-input form-textarea" id="new-caption-text" placeholder="Type your caption..." aria-label="Caption text"></textarea>
+
+              <div class="form-row" style="margin-top:12px;">
+                <div>
+                  <label class="form-label" for="caption-start" data-en="Start (s)" data-ar="بداية (ث)">Start (s)</label>
+                  <input type="number" class="form-input" id="caption-start" value="0" min="0" step="0.1" aria-label="Caption start time" />
+                </div>
+                <div>
+                  <label class="form-label" for="caption-end" data-en="End (s)" data-ar="نهاية (ث)">End (s)</label>
+                  <input type="number" class="form-input" id="caption-end" value="3" min="0" step="0.1" aria-label="Caption end time" />
+                </div>
+              </div>
+
+              <label class="form-label" for="caption-effect" style="margin-top:8px;" data-en="Animation" data-ar="الأنيميشن">Animation</label>
+              <select class="form-select" id="caption-effect" aria-label="Caption animation effect">
+                <option value="fadeUp" data-en="Fade Up" data-ar="تلاشي للأعلى">Fade Up</option>
+                <option value="fadeIn" data-en="Fade In" data-ar="تلاشي للداخل">Fade In</option>
+                <option value="slideLeft" data-en="Slide from Left" data-ar="انزلاق من اليسار">Slide from Left</option>
+                <option value="slideRight" data-en="Slide from Right" data-ar="انزلاق من اليمين">Slide from Right</option>
+                <option value="bounce" data-en="Bounce" data-ar="ارتداد">Bounce</option>
+                <option value="glitch" data-en="Glitch" data-ar="تشويش">Glitch</option>
+                <option value="typewriter" data-en="Typewriter" data-ar="آلة كاتبة">Typewriter</option>
+                <option value="zoom" data-en="Zoom In" data-ar="تكبير">Zoom In</option>
+              </select>
+
+              <label class="form-label" style="margin-top:8px;" data-en="Text color" data-ar="لون النص">Text color</label>
+              <div class="color-row" id="text-color-row">
+                <div class="color-swatch selected" style="background:#FFFFFF;" data-color="#FFFFFF" onclick="selectColor(this,'text')" role="radio" aria-checked="true" tabindex="0"></div>
+                <div class="color-swatch" style="background:#FFEB3B;" data-color="#FFEB3B" onclick="selectColor(this,'text')" role="radio" aria-checked="false" tabindex="0"></div>
+                <div class="color-swatch" style="background:#00E5FF;" data-color="#00E5FF" onclick="selectColor(this,'text')" role="radio" aria-checked="false" tabindex="0"></div>
+                <div class="color-swatch" style="background:#FF4081;" data-color="#FF4081" onclick="selectColor(this,'text')" role="radio" aria-checked="false" tabindex="0"></div>
+                <div class="color-swatch" style="background:#69F0AE;" data-color="#69F0AE" onclick="selectColor(this,'text')" role="radio" aria-checked="false" tabindex="0"></div>
+                <div class="color-swatch" style="background:#FF6D00;" data-color="#FF6D00" onclick="selectColor(this,'text')" role="radio" aria-checked="false" tabindex="0"></div>
+                <input type="color" id="custom-text-color" style="width:24px;height:24px;border-radius:50%;border:none;padding:0;cursor:pointer;" onchange="customColor(this,'text')" aria-label="Custom text color" />
+              </div>
+
+              <label class="form-label" style="margin-top:8px;" data-en="Font size" data-ar="حجم الخط">Font size</label>
+              <div style="display:flex;align-items:center;gap:8px;">
+                <input type="range" id="font-size-slider" min="16" max="80" value="36" style="flex:1;" oninput="document.getElementById('font-size-val').textContent=this.value+'px'" aria-label="Font size" />
+                <span id="font-size-val" style="color:var(--dark-text-muted);font-size:0.8rem;min-width:38px;">36px</span>
+              </div>
+
+              <button class="btn btn-primary w-full" style="margin-top:12px;" onclick="addCaption()" id="add-caption-btn">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                <span data-en="Add Caption" data-ar="أضف كابشن">Add Caption</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Effects Section -->
+        <div id="panel-effects-content" style="display:none;">
+          <div class="panel-section">
+            <div class="panel-section-title" data-en="VISUAL EFFECTS" data-ar="التأثيرات البصرية">VISUAL EFFECTS</div>
+            <div style="display:flex;flex-direction:column;gap:8px;" id="effects-list">
+              <!-- Injected by JS -->
+            </div>
+          </div>
+          <div class="panel-section">
+            <div class="panel-section-title" data-en="FILTERS" data-ar="الفلاتر">FILTERS</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;" id="filters-list">
+              <!-- Injected by JS -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Music Section -->
+        <div id="panel-music-content" style="display:none;">
+          <div class="panel-section">
+            <div class="panel-section-title" data-en="BACKGROUND MUSIC" data-ar="موسيقى الخلفية">BACKGROUND MUSIC</div>
+            <p style="font-size:0.8rem;color:var(--dark-text-muted);margin-bottom:12px;" data-en="Upload an audio file to add background music." data-ar="ارفع ملف صوتي لإضافة موسيقى خلفية.">Upload an audio file to add background music.</p>
+            <button class="btn btn-ghost w-full" style="color:var(--dark-text);" onclick="document.getElementById('audio-input').click()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              <span data-en="Upload Audio" data-ar="رفع صوت">Upload Audio</span>
+            </button>
+            <input type="file" id="audio-input" accept="audio/*" hidden onchange="loadAudio(event)" />
+            <div id="audio-info" style="display:none;margin-top:12px;padding:10px;background:rgba(255,255,255,0.04);border-radius:8px;font-size:0.8rem;color:var(--dark-text-muted);">
+              <span id="audio-name"></span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </aside>
+
+    <!-- ==================== CANVAS AREA ==================== -->
+    <main class="editor-canvas-area" id="canvas-area" aria-label="Video preview">
+      <div class="canvas-wrapper ratio-916" id="canvas-wrapper">
+        <!-- No video placeholder -->
+        <div class="no-video-placeholder" id="no-video-msg">
+          <div style="font-size:3rem;margin-bottom:12px;">🎬</div>
+          <p style="color:rgba(255,255,255,0.5);font-size:0.9rem;" data-en="No video loaded. Go back and upload a video." data-ar="لم يتم تحميل فيديو. ارجع وارفع فيديو.">No video loaded. Go back and upload a video.</p>
+          <a href="index.html" class="btn btn-secondary btn-sm" style="margin-top:12px;" data-en="Upload Video" data-ar="رفع فيديو">Upload Video</a>
+        </div>
+
+        <!-- Video Player -->
+        <video id="video-player" aria-label="Video preview" style="display:none;" playsinline preload="metadata"></video>
+
+        <!-- Caption Canvas Overlay -->
+        <canvas id="caption-canvas" aria-hidden="true"></canvas>
+      </div>
+
+      <!-- Video Controls -->
+      <div class="canvas-controls" id="video-controls" style="display:none;" role="toolbar" aria-label="Video playback controls">
+        <button class="control-btn" onclick="skipTime(-5)" aria-label="Rewind 5 seconds" title="Rewind 5s">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="19 20 9 12 19 4 19 20"/><line x1="5" y1="19" x2="5" y2="5"/></svg>
+        </button>
+
+        <button class="control-btn play-btn" id="play-pause-btn" onclick="togglePlayback()" aria-label="Play/Pause">
+          <svg id="play-icon" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          <svg id="pause-icon" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="display:none;"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+        </button>
+
+        <button class="control-btn" onclick="skipTime(5)" aria-label="Forward 5 seconds" title="Forward 5s">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 4 15 12 5 20 5 4"/><line x1="19" y1="5" x2="19" y2="19"/></svg>
+        </button>
+
+        <div class="time-display" id="time-display" aria-live="polite" aria-label="Current time">0:00 / 0:00</div>
+
+        <!-- Progress Scrubber -->
+        <input type="range" id="video-scrubber" min="0" max="100" value="0" style="width:120px;height:3px;-webkit-appearance:none;appearance:none;background:rgba(255,255,255,0.2);border-radius:2px;" oninput="seekVideo(this.value)" aria-label="Video progress" />
+
+        <!-- Volume -->
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.6)" stroke-width="2" aria-hidden="true"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+        <input type="range" class="volume-slider" id="volume-slider" min="0" max="1" step="0.05" value="1" oninput="setVolume(this.value)" aria-label="Volume" />
+
+        <!-- Fullscreen -->
+        <button class="control-btn" onclick="toggleFullscreen()" aria-label="Fullscreen">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+        </button>
+      </div>
+    </main>
+
+    <!-- ==================== RIGHT PANEL ==================== -->
+    <aside class="editor-panel-right" aria-label="Captions and properties">
+      <div class="right-panel-tabs" role="tablist">
+        <button class="right-panel-tab active" role="tab" aria-selected="true" id="tab-captions" onclick="switchRightTab('captions')" data-en="Captions" data-ar="كابشن">Captions</button>
+        <button class="right-panel-tab" role="tab" aria-selected="false" id="tab-style" onclick="switchRightTab('style')" data-en="Style" data-ar="النمط">Style</button>
+        <button class="right-panel-tab" role="tab" aria-selected="false" id="tab-export" onclick="switchRightTab('export')" data-en="Export" data-ar="تصدير">Export</button>
+      </div>
+
+      <div class="right-panel-content dark-scroll">
+        <!-- Captions Tab -->
+        <div id="right-captions" role="tabpanel" aria-labelledby="tab-captions">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+            <span style="font-size:0.82rem;font-weight:700;color:var(--dark-text);" data-en="Captions" data-ar="الكابشن">Captions</span>
+            <button class="timeline-add-btn" onclick="toggleLeftPanel('text'); switchRightTab('captions')" aria-label="Add caption">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              <span data-en="Add" data-ar="أضف">Add</span>
+            </button>
+          </div>
+
+          <!-- Auto-generate button -->
+          <button class="btn w-full" style="background:rgba(124,58,237,0.12);border:1px solid rgba(124,58,237,0.25);color:var(--clr-primary-light);margin-bottom:12px;border-radius:var(--r-md);padding:10px;font-size:0.82rem;font-weight:700;" onclick="autoGenerateCaptions()" aria-label="Auto generate captions">
+            🤖 <span data-en="Auto-Generate Captions" data-ar="توليد كابشن تلقائي">Auto-Generate Captions</span>
+          </button>
+
+          <!-- Captions List -->
+          <div id="captions-list">
+            <p style="font-size:0.8rem;color:var(--dark-text-muted);text-align:center;padding:20px 0;" data-en="No captions yet. Add captions or use Auto-Generate." data-ar="لا يوجد كابشن بعد. أضف كابشن أو استخدم التوليد التلقائي.">No captions yet. Add captions or use Auto-Generate.</p>
+          </div>
+        </div>
+
+        <!-- Style Tab -->
+        <div id="right-style" role="tabpanel" aria-labelledby="tab-style" style="display:none;">
+          <div class="panel-section">
+            <div class="panel-section-title" data-en="VIDEO FILTER" data-ar="فلتر الفيديو">VIDEO FILTER</div>
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;" id="filter-grid">
+              <!-- Injected by JS -->
+            </div>
+          </div>
+
+          <div class="panel-section" style="margin-top:16px;">
+            <div class="panel-section-title" data-en="BRIGHTNESS & CONTRAST" data-ar="السطوع والتباين">BRIGHTNESS & CONTRAST</div>
+            <label class="form-label" data-en="Brightness" data-ar="السطوع">Brightness</label>
+            <input type="range" min="50" max="150" value="100" style="width:100%;margin-bottom:8px;" id="brightness-slider" oninput="applyFilter()" aria-label="Brightness" />
+            <label class="form-label" data-en="Contrast" data-ar="التباين">Contrast</label>
+            <input type="range" min="50" max="150" value="100" style="width:100%;margin-bottom:8px;" id="contrast-slider" oninput="applyFilter()" aria-label="Contrast" />
+            <label class="form-label" data-en="Saturation" data-ar="التشبع">Saturation</label>
+            <input type="range" min="0" max="200" value="100" style="width:100%;" id="saturation-slider" oninput="applyFilter()" aria-label="Saturation" />
+          </div>
+        </div>
+
+        <!-- Export Tab -->
+        <div id="right-export" role="tabpanel" aria-labelledby="tab-export" style="display:none;">
+          <div class="panel-section">
+            <div class="panel-section-title" data-en="EXPORT SETTINGS" data-ar="إعدادات التصدير">EXPORT SETTINGS</div>
+            <label class="form-label" data-en="Format" data-ar="الصيغة">Format</label>
+            <select class="form-select" style="margin-bottom:12px;" id="export-format" aria-label="Export format">
+              <option value="webm">WebM (Browser)</option>
+              <option value="mp4">MP4 (Best)</option>
+            </select>
+
+            <label class="form-label" data-en="Quality" data-ar="الجودة">Quality</label>
+            <select class="form-select" style="margin-bottom:12px;" id="export-quality" aria-label="Export quality">
+              <option value="high" data-en="High (1080p)" data-ar="عالي (1080p)">High (1080p)</option>
+              <option value="medium" data-en="Medium (720p)" data-ar="متوسط (720p)">Medium (720p)</option>
+              <option value="low" data-en="Low (480p)" data-ar="منخفض (480p)">Low (480p)</option>
+            </select>
+
+            <button class="btn btn-primary w-full" onclick="openExportModal()" style="margin-top:4px;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              <span data-en="Export Video" data-ar="تصدير الفيديو">Export Video</span>
+            </button>
+
+            <button class="btn btn-ghost w-full" onclick="exportFrame()" style="margin-top:8px;color:var(--dark-text);">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+              <span data-en="Export Frame as PNG" data-ar="تصدير إطار كـ PNG">Export Frame as PNG</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+  </div><!-- /editor-body -->
+
+  <!-- ==================== TIMELINE ==================== -->
+  <footer class="editor-timeline" aria-label="Timeline">
+    <div class="timeline-header">
+      <span class="timeline-header-title" data-en="TIMELINE" data-ar="الجدول الزمني">TIMELINE</span>
+      <button class="timeline-add-btn" onclick="toggleLeftPanel('text')" aria-label="Add caption to timeline">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        <span data-en="Add Caption" data-ar="أضف كابشن">Add Caption</span>
+      </button>
+    </div>
+
+    <div class="timeline-body dark-scroll" id="timeline-body">
+      <!-- Time Ruler -->
+      <div class="time-ruler" id="time-ruler" style="margin-left:80px;" aria-label="Time ruler"></div>
+
+      <div class="timeline-tracks" id="timeline-tracks">
+        <div class="timeline-track">
+          <div class="track-label" data-en="Video" data-ar="فيديو">Video</div>
+          <div class="track-content" id="track-video">
+            <div class="timeline-playhead" id="playhead" style="left:0%;"></div>
+          </div>
+        </div>
+        <div class="timeline-track">
+          <div class="track-label" data-en="Captions" data-ar="كابشن">Captions</div>
+          <div class="track-content" id="track-captions"></div>
+        </div>
+        <div class="timeline-track">
+          <div class="track-label" data-en="Effects" data-ar="تأثيرات">Effects</div>
+          <div class="track-content" id="track-effects"></div>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+</div><!-- /editor-page -->
+
+<!-- ==================== EXPORT MODAL ==================== -->
+<div class="modal-overlay" id="export-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title" onclick="if(event.target===this)closeExportModal()">
+  <div class="modal-box">
+    <h2 class="modal-title" id="modal-title" data-en="Export Your Video" data-ar="تصدير فيديوك">Export Your Video</h2>
+    <p class="modal-subtitle" data-en="Choose format and quality for your final export." data-ar="اختر الصيغة والجودة للتصدير النهائي.">Choose format and quality for your final export.</p>
+
+    <div class="export-options">
+      <div class="export-option selected" id="opt-mp4" onclick="selectExportOption('mp4')">
+        <div class="opt-icon">🎬</div>
+        <div class="opt-name">MP4</div>
+        <div class="opt-desc" data-en="Best compatibility" data-ar="توافق أفضل">Best compatibility</div>
+      </div>
+      <div class="export-option" id="opt-webm" onclick="selectExportOption('webm')">
+        <div class="opt-icon">🌐</div>
+        <div class="opt-name">WebM</div>
+        <div class="opt-desc" data-en="Web optimized" data-ar="محسّن للويب">Web optimized</div>
+      </div>
+      <div class="export-option" id="opt-gif" onclick="selectExportOption('gif')">
+        <div class="opt-icon">🖼️</div>
+        <div class="opt-name">GIF</div>
+        <div class="opt-desc" data-en="Animated image" data-ar="صورة متحركة">Animated image</div>
+      </div>
+      <div class="export-option" id="opt-png" onclick="selectExportOption('png')">
+        <div class="opt-icon">📸</div>
+        <div class="opt-name">PNG Frame</div>
+        <div class="opt-desc" data-en="Current frame" data-ar="الإطار الحالي">Current frame</div>
+      </div>
+    </div>
+
+    <!-- Export Progress -->
+    <div id="export-progress-section" style="display:none;margin-bottom:20px;">
+      <div class="progress-bar" style="margin-bottom:8px;">
+        <div class="progress-fill" id="export-progress-fill" style="width:0%"></div>
+      </div>
+      <p style="font-size:0.8rem;color:var(--dark-text-muted);text-align:center;" id="export-progress-label">Processing...</p>
+    </div>
+
+    <div style="display:flex;gap:12px;">
+      <button class="btn btn-ghost" style="flex:1;color:var(--dark-text);" onclick="closeExportModal()" data-en="Cancel" data-ar="إلغاء">Cancel</button>
+      <button class="btn btn-primary" style="flex:2;" onclick="doExport()" id="do-export-btn">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        <span data-en="Export Now" data-ar="تصدير الآن">Export Now</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== TOAST CONTAINER ==================== -->
+<div class="toast-container" id="toast-container" aria-live="polite" aria-atomic="true"></div>
+
+<!-- ==================== SCRIPTS ==================== -->
+<script src="js/templates.js"></script>
+<script src="js/app.js"></script>
+<script src="js/editor.js"></script>
+<script src="js/timeline.js"></script>
+
+</body>
+</html>
