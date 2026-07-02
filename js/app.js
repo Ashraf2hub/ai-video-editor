@@ -60,18 +60,31 @@ function setLang(lang) {
 
 // ==================== TEMPLATE SELECTION ====================
 
-let selectedTemplateId = 'bloom';
+let selectedTemplateId = 'ai-select';
 
 function selectTemplate(id) {
   selectedTemplateId = id;
   AppState.selectedTemplate = id;
   sessionStorage.setItem('vidai-template', id);
 
+  const chipName = document.getElementById('template-chip-name');
+
+  if (id === 'ai-select') {
+    if (chipName) {
+      chipName.textContent = AppState.lang === 'ar' ? '🪄 اختيار ذكي تلقائي' : '🪄 AI Auto-Select';
+    }
+    // Highlight none in gallery
+    document.querySelectorAll('.template-card').forEach(card => {
+      card.style.outline = 'none';
+      card.style.transform = '';
+    });
+    return;
+  }
+
   const t = TEMPLATES.find(t => t.id === id);
   if (!t) return;
 
   // Update chip display
-  const chipName = document.getElementById('template-chip-name');
   if (chipName) chipName.textContent = t.name[AppState.lang];
 
   // Highlight selected in gallery
@@ -452,6 +465,78 @@ function editorRedo() {
   showToast(AppState.lang === 'ar' ? '↪ تم الإعادة' : '↪ Redone', 'info');
 }
 
+// ==================== AI TEMPLATE SELECTOR ====================
+
+/**
+ * Simulates AI analysis of the video to auto-pick the best template.
+ * In production, this would call a real AI vision model.
+ */
+function aiSelectTemplate() {
+  const filename = (sessionStorage.getItem('vidai-file-name') || '').toLowerCase();
+
+  // Keyword-based rules (simulates AI intent detection)
+  const rules = [
+    { keywords: ['travel','vlog','trip','vacation','adventure','explore'], template: 'bloom' },
+    { keywords: ['tech','tutorial','code','programming','software','how'], template: 'paper' },
+    { keywords: ['gaming','game','stream','esport','play'], template: 'prime' },
+    { keywords: ['night','city','urban','neon','cyber','future'], template: 'neon' },
+    { keywords: ['real','estate','business','corporate','office','work'], template: 'prism' },
+    { keywords: ['vintage','retro','classic','film','old','90s','80s'], template: 'vintage' },
+    { keywords: ['minimal','clean','simple','white','aesthetic'], template: 'minimal' },
+    { keywords: ['trending','social','tiktok','reel','viral','colorf'], template: 'gradient' },
+  ];
+
+  for (const rule of rules) {
+    if (rule.keywords.some(kw => filename.includes(kw))) {
+      return rule.template;
+    }
+  }
+
+  // Default: pick randomly from popular templates (weighted)
+  const weighted = ['bloom','bloom','prism','prism','prime','gradient','neon','paper'];
+  return weighted[Math.floor(Math.random() * weighted.length)];
+}
+
+function runAiTemplateSelection(onDone) {
+  let templateId = sessionStorage.getItem('vidai-template');
+  if (!templateId || templateId === 'ai-select') {
+    templateId = aiSelectTemplate();
+  }
+  const template = TEMPLATES.find(t => t.id === templateId) || TEMPLATES[0];
+
+  // Store AI selection
+  sessionStorage.setItem('vidai-template', templateId);
+  sessionStorage.setItem('vidai-ai-selected', '1');
+
+  // Show AI reveal card in processing page
+  const revealWrap  = document.getElementById('ai-template-reveal');
+  const revealCard  = document.getElementById('reveal-card');
+  const revealBg    = document.getElementById('reveal-bg');
+  const revealName  = document.getElementById('reveal-name');
+  const revealDesc  = document.getElementById('reveal-desc');
+  const revealLines = document.getElementById('reveal-lines');
+  const lang = AppState.lang;
+
+  if (revealWrap) {
+    revealWrap.style.display = 'flex';
+    setTimeout(() => {
+      revealWrap.classList.add('show');
+      if (revealBg)    revealBg.style.background = template.bg;
+      if (revealName)  revealName.textContent = template.emoji + ' ' + template.name[lang];
+      if (revealDesc)  revealDesc.textContent = template.desc[lang];
+      if (revealLines) {
+        revealLines.style.fontFamily = template.fontFamily;
+        revealLines.style.color      = template.textColor;
+        revealLines.textContent      = template.previewLines.join(' · ');
+      }
+      if (revealCard)  revealCard.style.animation = 'scaleIn 0.5s var(--ease-spring) both';
+    }, 100);
+  }
+
+  if (onDone) setTimeout(onDone, 1400);
+  return templateId;
+}
+
 // ==================== PROCESSING PAGE ANIMATION ====================
 
 const processingSteps = [
@@ -464,9 +549,9 @@ const processingSteps = [
 
 function runProcessingSequence() {
   const totalDuration = 4000;
-  const statusEl = document.getElementById('processing-status');
+  const statusEl  = document.getElementById('processing-status');
   const progressFill = document.getElementById('progress-fill');
-  const progressBar = document.getElementById('progress-bar-wrapper');
+  const progressBar  = document.getElementById('progress-bar-wrapper');
   const lang = AppState.lang;
 
   // Rotate tips
@@ -476,9 +561,7 @@ function runProcessingSequence() {
     if (tipEl) {
       tipEl.style.opacity = 0;
       setTimeout(() => {
-        const tip = PROCESSING_TIPS[tipIdx % PROCESSING_TIPS.length];
-        tipEl.querySelector('[data-en]')?.remove();
-        tipEl.textContent = tip[lang];
+        tipEl.textContent = PROCESSING_TIPS[tipIdx % PROCESSING_TIPS.length][lang];
         tipEl.style.opacity = 1;
         tipIdx++;
       }, 300);
@@ -487,46 +570,45 @@ function runProcessingSequence() {
 
   // Run steps
   processingSteps.forEach((step, i) => {
-    // Set step to running
+    // Start step
     setTimeout(() => {
       if (statusEl) statusEl.textContent = step.status[lang];
-
-      const stepEl = document.getElementById(`step-${i}`);
+      const stepEl     = document.getElementById(`step-${i}`);
       const statusIcon = document.getElementById(`step-status-${i}`);
-      if (stepEl) stepEl.classList.add('active');
-      if (statusIcon) {
-        statusIcon.className = 'step-status-icon running';
-        statusIcon.textContent = '';
-      }
+      if (stepEl)     stepEl.classList.add('active');
+      if (statusIcon) { statusIcon.className = 'step-status-icon running'; statusIcon.textContent = ''; }
 
-      // Update progress
       const pct = Math.round(((step.delay + step.duration / 2) / totalDuration) * 100);
       if (progressFill) progressFill.style.width = pct + '%';
-      if (progressBar) progressBar.setAttribute('aria-valuenow', pct);
+      if (progressBar)  progressBar.setAttribute('aria-valuenow', pct);
+
+      // 🤖 AI picks template during step 2 (Analyzing content)
+      if (i === 1) {
+        setTimeout(() => runAiTemplateSelection(), 400);
+      }
 
     }, step.delay);
 
     // Complete step
     setTimeout(() => {
-      const stepEl = document.getElementById(`step-${i}`);
+      const stepEl     = document.getElementById(`step-${i}`);
       const statusIcon = document.getElementById(`step-status-${i}`);
-      if (stepEl) { stepEl.classList.remove('active'); stepEl.classList.add('done'); }
+      if (stepEl)     { stepEl.classList.remove('active'); stepEl.classList.add('done'); }
       if (statusIcon) { statusIcon.className = 'step-status-icon done'; statusIcon.textContent = '✓'; }
     }, step.delay + step.duration);
   });
 
-  // Complete
+  // Complete → open editor
   setTimeout(() => {
     if (progressFill) progressFill.style.width = '100%';
-    if (progressBar) progressBar.setAttribute('aria-valuenow', 100);
-    if (statusEl) statusEl.textContent = lang === 'ar' ? '✅ جاهز! جارٍ الانتقال للمحرر...' : '✅ Done! Opening editor...';
+    if (progressBar)  progressBar.setAttribute('aria-valuenow', 100);
+    if (statusEl) statusEl.textContent = lang === 'ar' ? '✅ جاهز! جارٍ فتح المحرر...' : '✅ Done! Opening editor...';
     clearInterval(tipInterval);
 
-    setTimeout(() => {
-      window.location.href = 'editor.html';
-    }, 600);
+    setTimeout(() => { window.location.href = 'editor.html'; }, 600);
   }, totalDuration);
 }
+
 
 // ==================== AUTO-GENERATE CAPTIONS ====================
 
@@ -599,7 +681,7 @@ document.addEventListener('DOMContentLoaded', () => {
   setLang(savedLang);
 
   // Apply saved template
-  const savedTemplate = sessionStorage.getItem('vidai-template') || 'bloom';
+  const savedTemplate = sessionStorage.getItem('vidai-template') || 'ai-select';
   setTimeout(() => selectTemplate(savedTemplate), 100);
 
   // Init templates gallery if on landing page

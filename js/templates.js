@@ -277,14 +277,28 @@ function renderTemplateMenu(lang = 'en') {
   const container = document.getElementById('template-menu-list');
   if (!container) return;
 
-  container.innerHTML = TEMPLATES.map(t => `
-    <button style="display:flex;align-items:center;gap:10px;padding:10px;border-radius:8px;border:1px solid rgba(0,0,0,0.06);background:white;cursor:pointer;width:100%;font-family:inherit;transition:all 0.2s;"
+  const aiOption = `
+    <button style="display:flex;align-items:center;gap:10px;padding:10px;border-radius:8px;border:1px solid rgba(124,58,237,0.2);background:rgba(124,58,237,0.04);cursor:pointer;width:100%;font-family:inherit;transition:all 0.2s;text-align:left;"
+            onmouseover="this.style.background='rgba(124,58,237,0.08)'"
+            onmouseout="this.style.background='rgba(124,58,237,0.04)'"
+            onclick="selectTemplateFromMenu('ai-select')"
+            aria-label="AI Auto-Select">
+      <div style="width:28px;height:28px;border-radius:6px;background:linear-gradient(135deg, #7c3aed, #db2777);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:0.85rem;color:white;">🪄</div>
+      <div style="text-align:left;flex:1;">
+        <div style="font-size:0.82rem;font-weight:700;color:#1A1A1A;">${lang === 'ar' ? '🪄 اختيار ذكي تلقائي (AI)' : '🪄 AI Auto-Select'}</div>
+        <div style="font-size:0.72rem;color:#6B7280;">${lang === 'ar' ? 'دع الذكاء الاصطناعي يحلل محتواك ويقرر' : 'Let AI analyze your content and choose'}</div>
+      </div>
+    </button>
+  `;
+
+  container.innerHTML = aiOption + TEMPLATES.map(t => `
+    <button style="display:flex;align-items:center;gap:10px;padding:10px;border-radius:8px;border:1px solid rgba(0,0,0,0.06);background:white;cursor:pointer;width:100%;font-family:inherit;transition:all 0.2s;text-align:left;"
             onmouseover="this.style.background='rgba(124,58,237,0.06)'"
             onmouseout="this.style.background='white'"
             onclick="selectTemplateFromMenu('${t.id}')"
             aria-label="Select ${t.name[lang]} template">
       <div style="width:28px;height:28px;border-radius:6px;background:${t.bg};flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:0.85rem;">${t.emoji}</div>
-      <div style="text-align:left;">
+      <div style="text-align:left;flex:1;">
         <div style="font-size:0.82rem;font-weight:700;color:#1A1A1A;">${t.name[lang]}</div>
         <div style="font-size:0.72rem;color:#6B7280;">${t.desc[lang]}</div>
       </div>

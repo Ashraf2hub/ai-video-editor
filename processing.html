@@ -3,10 +3,116 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VidAI — Processing Your Video...</title>
-  <meta name="description" content="AI is analyzing your video and adding captions, effects and transitions automatically." />
+  <title>VidAI — AI is Analyzing Your Video...</title>
+  <meta name="description" content="AI is analyzing your video and picking the perfect template automatically." />
   <link rel="stylesheet" href="css/main.css" />
   <link rel="stylesheet" href="css/processing.css" />
+  <style>
+    /* ===== AI TEMPLATE REVEAL CARD ===== */
+    .ai-template-reveal {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      margin: 16px 0 4px;
+      opacity: 0;
+      transform: translateY(16px);
+      transition: opacity 0.5s ease, transform 0.5s ease;
+    }
+    .ai-template-reveal.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .ai-picked-label {
+      font-size: 0.78rem;
+      color: var(--clr-primary-light, #a78bfa);
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .ai-picked-label::before,
+    .ai-picked-label::after {
+      content: '';
+      display: block;
+      width: 30px;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(167,139,250,0.6));
+    }
+    .ai-picked-label::after { background: linear-gradient(90deg, rgba(167,139,250,0.6), transparent); }
+
+    #reveal-card {
+      width: 120px;
+      height: 200px;
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.6), 0 0 0 2px rgba(124,58,237,0.5);
+      position: relative;
+      flex-shrink: 0;
+    }
+    #reveal-bg {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-end;
+      padding: 12px 8px;
+      gap: 6px;
+    }
+    #reveal-lines {
+      font-size: 0.7rem;
+      font-weight: 800;
+      text-align: center;
+      line-height: 1.3;
+      word-break: break-word;
+    }
+    #reveal-name {
+      font-size: 0.68rem;
+      font-weight: 700;
+      color: rgba(255,255,255,0.9);
+      background: rgba(0,0,0,0.4);
+      padding: 3px 8px;
+      border-radius: 999px;
+      text-align: center;
+    }
+    .reveal-meta {
+      text-align: center;
+    }
+    .reveal-template-title {
+      font-size: 1rem;
+      font-weight: 800;
+      color: #fff;
+    }
+    .reveal-template-desc {
+      font-size: 0.75rem;
+      color: rgba(255,255,255,0.5);
+      margin-top: 2px;
+    }
+    .reveal-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: rgba(124,58,237,0.18);
+      border: 1px solid rgba(124,58,237,0.35);
+      border-radius: 999px;
+      padding: 4px 12px;
+      font-size: 0.72rem;
+      color: #c4b5fd;
+      font-weight: 700;
+      margin-top: 6px;
+    }
+    @keyframes scaleIn {
+      from { transform: scale(0.7) rotateY(20deg); opacity: 0; }
+      to   { transform: scale(1)   rotateY(0deg);  opacity: 1; }
+    }
+    @keyframes pulse-glow {
+      0%, 100% { box-shadow: 0 20px 60px rgba(0,0,0,0.6), 0 0 0 2px rgba(124,58,237,0.5); }
+      50%       { box-shadow: 0 20px 60px rgba(0,0,0,0.6), 0 0 0 4px rgba(124,58,237,0.8), 0 0 30px rgba(124,58,237,0.3); }
+    }
+    #reveal-card.show { animation: scaleIn 0.5s var(--ease-spring) both, pulse-glow 2s ease 0.5s infinite; }
+  </style>
 </head>
 <body>
 
@@ -27,17 +133,50 @@
     </div>
 
     <!-- Title -->
-    <h1 class="processing-title" id="processing-title" data-en="AI is working its magic..." data-ar="الذكاء الاصطناعي يعمل...">AI is working its magic...</h1>
-    <p class="processing-subtitle" data-en="Analyzing your video and generating professional edits. This takes just a few seconds." data-ar="نحلل فيديوك وننشئ تعديلات احترافية. هذا يستغرق ثوانٍ فقط.">
-      Analyzing your video and generating professional edits. This takes just a few seconds.
+    <h1 class="processing-title" id="processing-title"
+        data-en="AI is analyzing your video..."
+        data-ar="الذكاء الاصطناعي يحلل فيديوك...">
+      AI is analyzing your video...
+    </h1>
+    <p class="processing-subtitle"
+       data-en="AI will pick the perfect template and generate captions for you automatically."
+       data-ar="الذكاء الاصطناعي سيختار أفضل قالب ويولد الكابشن تلقائياً.">
+      AI will pick the perfect template and generate captions for you automatically.
     </p>
 
     <!-- Dynamic Status -->
     <div class="processing-status" id="processing-status" role="status"></div>
 
     <!-- Progress Bar -->
-    <div class="processing-progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" aria-label="Processing progress" id="progress-bar-wrapper">
+    <div class="processing-progress-bar" role="progressbar"
+         aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"
+         aria-label="Processing progress" id="progress-bar-wrapper">
       <div class="processing-progress-fill" id="progress-fill"></div>
+    </div>
+
+    <!-- ✨ AI TEMPLATE REVEAL (shown dynamically by JS) -->
+    <div class="ai-template-reveal" id="ai-template-reveal">
+      <div class="ai-picked-label"
+           data-en="🤖 AI picked for you"
+           data-ar="🤖 اختار الذكاء الاصطناعي لك">
+        🤖 AI picked for you
+      </div>
+
+      <div id="reveal-card">
+        <div id="reveal-bg">
+          <div id="reveal-lines"></div>
+          <div id="reveal-name"></div>
+        </div>
+      </div>
+
+      <div class="reveal-meta">
+        <div class="reveal-template-title" id="reveal-template-title-text"></div>
+        <div class="reveal-template-desc"  id="reveal-desc"></div>
+        <div class="reveal-badge">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          <span data-en="Best match for your content" data-ar="الأنسب لمحتواك">Best match for your content</span>
+        </div>
+      </div>
     </div>
 
     <!-- Processing Steps -->
@@ -48,16 +187,16 @@
           <div class="step-name" data-en="Uploading video" data-ar="رفع الفيديو">Uploading video</div>
           <div class="step-desc" data-en="Preparing your file for analysis" data-ar="تجهيز ملفك للتحليل">Preparing your file for analysis</div>
         </div>
-        <div class="step-status-icon pending" id="step-status-0" aria-label="Pending">⏳</div>
+        <div class="step-status-icon pending" id="step-status-0">⏳</div>
       </div>
 
       <div class="processing-step" id="step-1" role="listitem">
         <div class="step-icon-wrap">🔍</div>
         <div class="step-info">
-          <div class="step-name" data-en="Analyzing content" data-ar="تحليل المحتوى">Analyzing content</div>
-          <div class="step-desc" data-en="Detecting scenes, faces, and speech" data-ar="اكتشاف المشاهد والوجوه والكلام">Detecting scenes, faces, and speech</div>
+          <div class="step-name" data-en="Analyzing & picking template" data-ar="تحليل واختيار القالب">Analyzing & picking template</div>
+          <div class="step-desc" data-en="AI detects mood, style and best template" data-ar="AI يكتشف المزاج والأسلوب وأفضل قالب">AI detects mood, style and best template</div>
         </div>
-        <div class="step-status-icon pending" id="step-status-1" aria-label="Pending">⏳</div>
+        <div class="step-status-icon pending" id="step-status-1">⏳</div>
       </div>
 
       <div class="processing-step" id="step-2" role="listitem">
@@ -66,7 +205,7 @@
           <div class="step-name" data-en="Generating captions" data-ar="توليد الكابشن">Generating captions</div>
           <div class="step-desc" data-en="Transcribing and styling your speech" data-ar="تحويل الكلام إلى نص وتنسيقه">Transcribing and styling your speech</div>
         </div>
-        <div class="step-status-icon pending" id="step-status-2" aria-label="Pending">⏳</div>
+        <div class="step-status-icon pending" id="step-status-2">⏳</div>
       </div>
 
       <div class="processing-step" id="step-3" role="listitem">
@@ -75,22 +214,22 @@
           <div class="step-name" data-en="Applying effects" data-ar="تطبيق التأثيرات">Applying effects</div>
           <div class="step-desc" data-en="Adding transitions and visual effects" data-ar="إضافة الانتقالات والتأثيرات البصرية">Adding transitions and visual effects</div>
         </div>
-        <div class="step-status-icon pending" id="step-status-3" aria-label="Pending">⏳</div>
+        <div class="step-status-icon pending" id="step-status-3">⏳</div>
       </div>
 
       <div class="processing-step" id="step-4" role="listitem">
         <div class="step-icon-wrap">🎉</div>
         <div class="step-info">
-          <div class="step-name" data-en="Finalizing project" data-ar="إنهاء المشروع">Finalizing project</div>
-          <div class="step-desc" data-en="Your video is ready to be edited" data-ar="فيديوك جاهز للتحرير">Your video is ready to be edited</div>
+          <div class="step-name" data-en="Ready to edit!" data-ar="جاهز للتحرير!">Ready to edit!</div>
+          <div class="step-desc" data-en="Your AI-edited video is waiting for you" data-ar="فيديوك المعدَّل بالذكاء الاصطناعي ينتظرك">Your AI-edited video is waiting for you</div>
         </div>
-        <div class="step-status-icon pending" id="step-status-4" aria-label="Pending">⏳</div>
+        <div class="step-status-icon pending" id="step-status-4">⏳</div>
       </div>
     </div>
 
     <!-- Tip -->
     <div class="processing-tip" id="processing-tip" aria-live="polite">
-      <span data-en="💡 Tip: Use the Bloom template for a warm, cinematic look." data-ar="💡 نصيحة: استخدم قالب Bloom للمظهر الدافئ السينمائي.">💡 Tip: Use the Bloom template for a warm, cinematic look.</span>
+      💡 AI is choosing the best style for your content...
     </div>
   </div>
 </div>
@@ -98,22 +237,32 @@
 <script src="js/templates.js"></script>
 <script src="js/app.js"></script>
 <script>
-  // Initialize processing page
   document.addEventListener('DOMContentLoaded', () => {
-    // Apply saved language
     const savedLang = localStorage.getItem('vidai-lang') || 'en';
     setLang(savedLang);
 
-    // Load video thumbnail
+    // Show video thumbnail if available
     const videoData = sessionStorage.getItem('vidai-video-url');
     if (videoData) {
       const preview = document.getElementById('processing-preview');
-      const thumb = document.getElementById('processing-video-thumb');
-      thumb.src = videoData;
-      preview.style.display = 'block';
+      const thumb   = document.getElementById('processing-video-thumb');
+      if (thumb)   thumb.src = videoData;
+      if (preview) preview.style.display = 'block';
     }
 
-    // Start processing simulation
+    // Patch reveal card to also update reveal-template-title-text
+    const origRunAi = window.runAiTemplateSelection;
+    window.runAiTemplateSelection = function(onDone) {
+      const id = origRunAi(onDone);
+      const t  = TEMPLATES.find(t => t.id === id) || TEMPLATES[0];
+      const titleEl = document.getElementById('reveal-template-title-text');
+      const revealCard = document.getElementById('reveal-card');
+      if (titleEl) titleEl.textContent = t.name[AppState.lang];
+      if (revealCard) revealCard.classList.add('show');
+      return id;
+    };
+
+    // Start AI processing
     runProcessingSequence();
   });
 </script>

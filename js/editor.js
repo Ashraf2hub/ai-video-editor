@@ -39,8 +39,9 @@ function initEditor() {
   }
 
   // Load saved template
-  const savedTemplate = sessionStorage.getItem('vidai-template') || 'bloom';
-  const t = TEMPLATES.find(t => t.id === savedTemplate);
+  let savedTemplate = sessionStorage.getItem('vidai-template') || 'bloom';
+  if (savedTemplate === 'ai-select') savedTemplate = 'bloom';
+  const t = TEMPLATES.find(t => t.id === savedTemplate) || TEMPLATES[0];
   if (t) {
     EditorState.currentTemplate = t;
     selectTemplate(t.id);
@@ -138,6 +139,12 @@ function onVideoLoaded() {
   resizeCanvas();
   renderTimeRuler();
   renderVideoTrackBlock();
+
+  // 🤖 Automatically generate AI captions on load
+  if (typeof autoGenerateCaptions === 'function') {
+    autoGenerateCaptions();
+  }
+
   showToast(AppState.lang === 'ar' ? '✅ جاهز للتحرير!' : '✅ Ready to edit!', 'success');
 }
 
