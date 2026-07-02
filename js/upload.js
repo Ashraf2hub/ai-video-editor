@@ -87,8 +87,16 @@ function processFile(file) {
   showFilePreview(file, uploadedVideoUrl);
 
   // Enable create button
+  // Enable create button
   const createBtn = document.getElementById('create-btn');
   if (createBtn) createBtn.disabled = false;
+
+  // 🤖 AI selects the template immediately on upload!
+  if (selectedTemplateId === 'ai-select' && typeof aiSelectTemplate === 'function') {
+    const templateId = aiSelectTemplate();
+    selectTemplate(templateId);
+    sessionStorage.setItem('vidai-ai-selected', '1');
+  }
 
   showToast(
     (AppState.lang === 'ar' ? '✅ تم رفع الفيديو: ' : '✅ Video uploaded: ') + file.name,
